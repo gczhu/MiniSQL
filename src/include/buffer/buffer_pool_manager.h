@@ -13,7 +13,7 @@
 using namespace std;
 
 class BufferPoolManager {
- public:
+public:
   explicit BufferPoolManager(size_t pool_size, DiskManager *disk_manager);
 
   ~BufferPoolManager();
@@ -32,7 +32,7 @@ class BufferPoolManager {
 
   bool CheckAllUnpinned();
 
- private:
+private:
   /**
    * Allocate new page (operations like create index/table) For now just keep an increasing counter
    */
@@ -45,13 +45,13 @@ class BufferPoolManager {
 
   frame_id_t TryToFindFreePage();
 
- private:
+private:
   size_t pool_size_;                                 // number of pages in buffer pool
-  Page *pages_;                                      // array of pages
-  DiskManager *disk_manager_;                        // pointer to the disk manager.
-  unordered_map<page_id_t, frame_id_t> page_table_;  // to keep track of pages
+  Page *pages_;                                      // array of pages(表示缓冲区的内存空间)
+  DiskManager *disk_manager_;                        // pointer to the disk manager
+  unordered_map<page_id_t, frame_id_t> page_table_;  // to keep track of pages(page_id:数据在磁盘的id frame_id:数据在缓冲区的id)
   Replacer *replacer_;                               // to find an unpinned page for replacement
-  list<frame_id_t> free_list_;                       // to find a free page for replacement
+  list<frame_id_t> free_list_;                       // to find a free page for replacement(缓冲区中的可用空间)
   recursive_mutex latch_;                            // to protect shared data structure
 };
 
