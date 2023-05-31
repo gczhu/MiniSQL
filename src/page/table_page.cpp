@@ -1,4 +1,5 @@
 #include "page/table_page.h"
+#include <iostream>
 
 void TablePage::Init(page_id_t page_id, page_id_t prev_id, LogManager *log_mgr, Transaction *txn) {
   memcpy(GetData(), &page_id, sizeof(page_id));
@@ -160,6 +161,7 @@ bool TablePage::GetTuple(Row *row, Schema *schema, Transaction *txn, LockManager
   // At this point, we have at least a shared lock on the RID. Copy the tuple data into our result.
   uint32_t tuple_offset = GetTupleOffsetAtSlot(slot_num);
   uint32_t __attribute__((unused)) read_bytes = row->DeserializeFrom(GetData() + tuple_offset, schema);
+  std::cout<<tuple_size<<" "<<read_bytes<<std::endl;
   ASSERT(tuple_size == read_bytes, "Unexpected behavior in tuple deserialize.");
   return true;
 }

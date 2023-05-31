@@ -45,9 +45,9 @@ uint32_t Column::SerializeTo(char *buf) const {
     MACH_WRITE_INT32(buf+size,name_.length());
     MACH_WRITE_STRING(buf+size+4, name_);
     size+=MACH_STR_SERIALIZED_SIZE(name_);
-    MACH_WRITE_TO(TypeID,buf+size,type_);
-    size+=sizeof(TypeID);
-    if(type_ == TypeID::kTypeChar){
+    MACH_WRITE_TO(TypeId,buf+size,type_);
+    size+=sizeof(TypeId);
+    if(type_ == TypeId::kTypeChar){
         MACH_WRITE_UINT32(buf+size, len_);
         size+=sizeof(uint32_t);
     }
@@ -67,8 +67,8 @@ uint32_t Column::GetSerializedSize() const {
     uint32_t size=0;
     size+=sizeof(uint32_t);
     size+=MACH_STR_SERIALIZED_SIZE(name_);
-    size+=sizeof(TypeID);
-    if(type_ == TypeID::kTypeChar)size+=sizeof(uint32_t);
+    size+=sizeof(TypeId);
+    if(type_ == TypeId::kTypeChar)size+=sizeof(uint32_t);
     size+=sizeof(uint32_t);
     size+=sizeof(int8_t);
     size+=sizeof(int8_t);
@@ -89,11 +89,11 @@ uint32_t Column::DeserializeFrom(char *buf, Column *&column) {
     int32_t length=MACH_READ_INT32(buf+size);
     size+=4;
     std::string name_={};
-    for(int i=0;i<length,i++)name_.push_back(MACH_READ_FROM(int8_t,buf+size++));
-    TypeID id=MACH_READ_FROM(TypeID,buf+size);
-    size+=sizeof(TypeID);
+    for(int i=0;i<length;i++)name_.push_back(MACH_READ_FROM(int8_t,buf+size++));
+    TypeId id=MACH_READ_FROM(TypeId,buf+size);
+    size+=sizeof(TypeId);
     int32_t len=0;
-    if(id==TypeID::kTypeChar){
+    if(id==TypeId::kTypeChar){
         len=MACH_READ_INT32(buf+size);
         size+=sizeof(int32_t);
     }

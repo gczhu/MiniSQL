@@ -4,14 +4,13 @@
 #include "common/rowid.h"
 #include "record/row.h"
 #include "transaction/transaction.h"
+#include "buffer/buffer_pool_manager.h"
 
 class TableHeap;
 
 class TableIterator {
 public:
-  // you may define your own constructor based on your member variables
-  explicit TableIterator(BufferPoolManager *buffer_pool_manager, Schema *schema,RowID rowId)
-                        :row_(rowId),buffer_(buffer_pool_manager),schema_(schema){}
+  explicit TableIterator(BufferPoolManager *buffer_pool_manager, Schema *schema,RowId rowId);
 
   explicit TableIterator(const TableIterator &other);
 
@@ -32,7 +31,7 @@ public:
   TableIterator operator++(int);
 
 private:
-    RowID row_;
+    RowId row_;
     BufferPoolManager* buffer_;
     Schema* schema_;
     Row* row=nullptr;

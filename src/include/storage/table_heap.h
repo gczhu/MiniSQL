@@ -47,7 +47,7 @@ class TableHeap {
    * @param[in] txn Transaction performing the update
    * @return true is update is successful.
    */
-  bool UpdateTuple(const Row &row, const RowId &rid, Transaction *txn);
+  bool UpdateTuple(Row &row, const RowId &rid, Transaction *txn);
 
   /**
    * Called on Commit/Abort to actually delete a tuple or rollback an insert.
@@ -114,8 +114,8 @@ private:
           log_manager_(log_manager),
           lock_manager_(lock_manager) {
     Page *initialize = buffer_pool_manager_->NewPage(first_page_id_);//新建一个数据页
-    reinterpret_cast<TablePage*> (initialize)->init(first_page_id_,INVALID_PAGE_ID,nullptr,nullptr);//初始化
-    buffer_pool_manager_->UnpinPage(first_page_id_,initialize.is_dirty_);//解除锁定
+    reinterpret_cast<TablePage*> (initialize)->Init(first_page_id_,INVALID_PAGE_ID,nullptr,nullptr);//初始化
+    buffer_pool_manager_->UnpinPage(first_page_id_,initialize->IsDirty());//解除锁定
   };
 
   explicit TableHeap(BufferPoolManager *buffer_pool_manager, page_id_t first_page_id, Schema *schema,
