@@ -39,22 +39,71 @@ Column::Column(const Column *other)
 * TODO: Student Implement
 */
 uint32_t Column::SerializeTo(char *buf) const {
-  // replace with your code here
-  return 0;
+    uint32_t size=0;
+    MACH_WRITE_UINT32(buf, COLUMN_MAGIC_NUM);
+    size+=sizeof(uint32_t);
+    MACH_WRITE_INT32(buf+size,name_.length());
+    MACH_WRITE_STRING(buf+size+4, name_);
+    size+=MACH_STR_SERIALIZED_SIZE(name_);
+    MACH_WRITE_TO(TypeID,buf+size,type_);
+    size+=sizeof(TypeID);
+    if(type_ == TypeID::kTypeChar){
+        MACH_WRITE_UINT32(buf+size, len_);
+        size+=sizeof(uint32_t);
+    }
+    MACH_WRITE_UINT32(buf+size, table_ind_);
+    size+=sizeof(uint32_t);
+    MACH_WRITE_TO(int8_t,buf+size,nullable_);
+    size+=sizeof(int8_t);
+    MACH_WRITE_TO(int8_t,buf+size,unique_);
+    size+=sizeof(int8_t);
+    return size;
 }
 
 /**
  * TODO: Student Implement
  */
 uint32_t Column::GetSerializedSize() const {
-  // replace with your code here
-  return 0;
+    uint32_t size=0;
+    size+=sizeof(uint32_t);
+    size+=MACH_STR_SERIALIZED_SIZE(name_);
+    size+=sizeof(TypeID);
+    if(type_ == TypeID::kTypeChar)size+=sizeof(uint32_t);
+    size+=sizeof(uint32_t);
+    size+=sizeof(int8_t);
+    size+=sizeof(int8_t);
+    return size;
 }
 
 /**
  * TODO: Student Implement
  */
 uint32_t Column::DeserializeFrom(char *buf, Column *&column) {
-  // replace with your code here
-  return 0;
+    if (column != nullptr) {
+        LOG(WARNING) << "Pointer to column is not null in column deserialize."<<std::endl;
+    }
+    uint32_t size=0;
+    uint32_t check=MACH_READ_UINT32(buf);
+    if(check!=210928)return 0;
+    size+=sizeof(uint32_t);
+    int32_t length=MACH_READ_INT32(buf+size);
+    size+=4;
+    std::string name_={};
+    for(int i=0;i<length,i++)name_.push_back(MACH_READ_FROM(int8_t,buf+size++));
+    TypeID id=MACH_READ_FROM(TypeID,buf+size);
+    size+=sizeof(TypeID);
+    int32_t len=0;
+    if(id==TypeID::kTypeChar){
+        len=MACH_READ_INT32(buf+size);
+        size+=sizeof(int32_t);
+    }
+    int32_t index=MACH_READ_INT32(buf+size);
+    size+=sizeof(int32_t);
+    int8_t nu=MACH_READ_FROM(int8_t,buf+size);
+    size+=sizeof(int8_t);
+    int8_t un=MACH_READ_FROM(int8_t,buf+size);
+    size+=sizeof(int8_t);
+    if(len)column = new Column(name_,id,len,index,nu,un);
+    else column = new Column(name_,id,index,nu,un);
+    return size;
 }
