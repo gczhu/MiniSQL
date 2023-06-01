@@ -2,6 +2,7 @@
 
 #include "common/macros.h"
 #include "record/field.h"
+#include <iostream>
 
 inline int CompareStrings(const char *str1, int len1, const char *str2, int len2) {
   assert(str1 != nullptr);
@@ -160,6 +161,7 @@ uint32_t TypeFloat::SerializeTo(const Field &field, char *buf) const {
 }
 
 uint32_t TypeFloat::DeserializeFrom(char *storage, Field **field, bool is_null) const {
+
   if (is_null) {
     *field = new Field(TypeId::kTypeFloat);
     return 0;

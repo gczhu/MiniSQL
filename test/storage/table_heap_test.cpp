@@ -47,6 +47,7 @@ TEST(TableHeapTest, TableHeapSampleTest) {
 
   ASSERT_EQ(row_nums, row_values.size());
   ASSERT_EQ(row_nums, size);
+
   for (auto row_kv : row_values) {
     size--;
     Row row(RowId(row_kv.first));
@@ -58,5 +59,6 @@ TEST(TableHeapTest, TableHeapSampleTest) {
     // free spaces
     delete row_kv.second;
   }
+
   ASSERT_EQ(size, 0);
 }

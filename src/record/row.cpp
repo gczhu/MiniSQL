@@ -10,20 +10,16 @@ uint32_t Row::SerializeTo(char *buf, Schema *schema) const {
   uint32_t num=fields_.size();
   MACH_WRITE_UINT32(buf,num);
   size+=sizeof(uint32_t);
-  uint32_t bit[num/32+1];
-  for(int i=0;i<num/32+1;i++)bit[i]=0;
+  uint32_t bit=0;
   for(int i=0;i<num;i++){
-    if(!fields_[i]->IsNull())bit[i/32]^=1;
-    bit[i/32]<<=1;
+    if(!fields_[i]->IsNull())bit^=1;
+    bit<<=1;
   }
   for(int i=0;i<num/32+1;i++) {
-    MACH_WRITE_UINT32(buf+size,bit[i]);
+    MACH_WRITE_UINT32(buf+size,bit);
     size+=sizeof(uint32_t);
   }
   for(int i=0;i<num;i++){
-    if(fields_[i]->IsNull())continue;
-    MACH_WRITE_TO(TypeId,buf+size, fields_[i]->GetTypeId());
-    size+=sizeof(TypeId);
     size+=fields_[i]->SerializeTo(buf+size);
   }
   MACH_WRITE_INT32(buf+size,rid_.GetPageId());
@@ -36,25 +32,24 @@ uint32_t Row::SerializeTo(char *buf, Schema *schema) const {
 uint32_t Row::DeserializeFrom(char *buf, Schema *schema) {
   ASSERT(schema != nullptr, "Invalid schema before serialize.");
   ASSERT(fields_.empty(), "Non empty field in row.");
+
   uint32_t size=0;
   uint32_t num=MACH_READ_UINT32(buf);
   size+=sizeof(uint32_t);
-  uint32_t bit[num/32+1];
-  for(int i=0;i<num/32+1;i++){
-    bit[i]= MACH_READ_UINT32(buf+size);
-  }
-  for(int i=0;i<num/32+1;i++) {
-    for (int j = 0; 32 * i + j < num && j < 32; j++) {
-      Field *ff;
-      if (bit[i] & 1) {
-        TypeId t = MACH_READ_FROM(TypeId, buf + size);
-        size += sizeof(TypeId);
-        size += Field::DeserializeFrom(buf + size, t, &ff, false);
-        fields_.push_back(new Field(*ff));
+  uint32_t bit;
+    bit= MACH_READ_UINT32(buf+size);
+    size+=sizeof(uint32_t);
+    fields_.clear();
+    for (int j = 0;  j < num; j++) {
+      Field *ff= nullptr;
+      bit >>= 1;
+      if (bit & 1) {
+        size += Field::DeserializeFrom(buf + size,schema->GetColumn(j)->GetType() , &ff, false);
       }
-      bit[i] >>= 1;
+      else size += Field::DeserializeFrom(buf + size,schema->GetColumn(j)->GetType() , &ff, true);
+      fields_.push_back(ff);
+
     }
-  }
   page_id_t pageId= MACH_READ_FROM(page_id_t,buf+size);
   size+=sizeof(int32_t);
   uint32_t slot= MACH_READ_UINT32(buf+size);
@@ -72,7 +67,6 @@ uint32_t Row::GetSerializedSize(Schema *schema) const {
   size+=sizeof(uint32_t)*(fields_.size()/32+1);
   for(int i=0;i<fields_.size();i++){
       if(fields_[i]->IsNull())continue;
-      size+=sizeof(TypeId);
       size+=fields_[i]->GetSerializedSize();
   }
   size+=sizeof(int32_t);

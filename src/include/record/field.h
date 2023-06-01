@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include <string>
+#include <iostream>
 
 #include "common/config.h"
 #include "common/macros.h"
