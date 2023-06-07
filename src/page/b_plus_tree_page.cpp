@@ -8,29 +8,29 @@
  * TODO: Student Implement
  */
 bool BPlusTreePage::IsLeafPage() const {
-  return false;
+  return this->page_type_ == IndexPageType::LEAF_PAGE;
 }
 
 /**
  * TODO: Student Implement
  */
 bool BPlusTreePage::IsRootPage() const {
-  return false;
+  return this->parent_page_id_ == INVALID_PAGE_ID;
 }
 
 /**
  * TODO: Student Implement
  */
 void BPlusTreePage::SetPageType(IndexPageType page_type) {
-
+  this->page_type_ = page_type;
 }
 
 int BPlusTreePage::GetKeySize() const {
-  return key_size_;
+  return this->key_size_;
 }
 
 void BPlusTreePage::SetKeySize(int size) {
-  key_size_ = size;
+  this->key_size_ = size;
 }
 
 /*
@@ -38,15 +38,15 @@ void BPlusTreePage::SetKeySize(int size) {
  * page)
  */
 int BPlusTreePage::GetSize() const {
-  return size_;
+  return this->size_;
 }
 
 void BPlusTreePage::SetSize(int size) {
-  size_ = size;
+  this->size_ = size;
 }
 
 void BPlusTreePage::IncreaseSize(int amount) {
-  size_ += amount;
+  this->size_ += amount;
 }
 
 /*
@@ -56,14 +56,14 @@ void BPlusTreePage::IncreaseSize(int amount) {
  * TODO: Student Implement
  */
 int BPlusTreePage::GetMaxSize() const {
-  return 0;
+  return this->max_size_;
 }
 
 /**
  * TODO: Student Implement
  */
 void BPlusTreePage::SetMaxSize(int size) {
-
+  this->max_size_ = size;
 }
 
 /*
@@ -74,7 +74,7 @@ void BPlusTreePage::SetMaxSize(int size) {
  * TODO: Student Implement
  */
 int BPlusTreePage::GetMinSize() const {
-  return 0;
+  return this->max_size_ / 2;
 }
 
 /*
@@ -84,22 +84,22 @@ int BPlusTreePage::GetMinSize() const {
  * TODO: Student Implement
  */
 page_id_t BPlusTreePage::GetParentPageId() const {
-  return INVALID_PAGE_ID;
+  return this->parent_page_id_;
 }
 
 void BPlusTreePage::SetParentPageId(page_id_t parent_page_id) {
-  parent_page_id_ = parent_page_id;
+  this->parent_page_id_ = parent_page_id;
 }
 
 /*
  * Helper methods to get/set self page id
  */
 page_id_t BPlusTreePage::GetPageId() const {
-  return page_id_;
+  return this->page_id_;
 }
 
 void BPlusTreePage::SetPageId(page_id_t page_id) {
-  page_id_ = page_id;
+  this->page_id_ = page_id;
 }
 
 /*

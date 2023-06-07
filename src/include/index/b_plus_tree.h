@@ -25,9 +25,9 @@ class BPlusTree {
   using InternalPage = BPlusTreeInternalPage;
   using LeafPage = BPlusTreeLeafPage;
 
- public:
+public:
   explicit BPlusTree(index_id_t index_id, BufferPoolManager *buffer_pool_manager, const KeyManager &comparator,
-                     int leaf_max_size = UNDEFINED_SIZE, int internal_max_size = UNDEFINED_SIZE);
+    int leaf_max_size = 5, int internal_max_size = 6);
 
   // Returns true if this B+ tree has no keys and values.
   bool IsEmpty() const;
@@ -67,13 +67,13 @@ class BPlusTree {
     out << "}" << std::endl;
   }
 
- private:
+private:
   void StartNewTree(GenericKey *key, const RowId &value);
 
   bool InsertIntoLeaf(GenericKey *key, const RowId &value, Transaction *transaction = nullptr);
 
   void InsertIntoParent(BPlusTreePage *old_node, GenericKey *key, BPlusTreePage *new_node,
-                        Transaction *transaction = nullptr);
+    Transaction *transaction = nullptr);
 
   LeafPage *Split(LeafPage *node, Transaction *transaction);
 
@@ -83,10 +83,10 @@ class BPlusTree {
   bool CoalesceOrRedistribute(N *&node, Transaction *transaction = nullptr);
 
   bool Coalesce(InternalPage *&neighbor_node, InternalPage *&node, InternalPage *&parent, int index,
-                Transaction *transaction = nullptr);
+    Transaction *transaction = nullptr);
 
   bool Coalesce(LeafPage *&neighbor_node, LeafPage *&node, InternalPage *&parent, int index,
-                Transaction *transaction = nullptr);
+    Transaction *transaction = nullptr);
 
   void Redistribute(LeafPage *neighbor_node, LeafPage *node, int index);
 
@@ -103,7 +103,7 @@ class BPlusTree {
 
   // member variable
   index_id_t index_id_;
-  page_id_t root_page_id_{INVALID_PAGE_ID};
+  page_id_t root_page_id_{ INVALID_PAGE_ID };
   BufferPoolManager *buffer_pool_manager_;
   KeyManager processor_;
   int leaf_max_size_;
