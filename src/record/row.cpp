@@ -10,15 +10,13 @@ uint32_t Row::SerializeTo(char *buf, Schema *schema) const {
   uint32_t num=fields_.size();
   MACH_WRITE_UINT32(buf,num);
   size+=sizeof(uint32_t);
-  uint32_t bit=0;
+  uint64_t bit=0,tot=1;
   for(int i=0;i<num;i++){
-    if(!fields_[i]->IsNull())bit^=1;
-    bit<<=1;
+    if(!fields_[i]->IsNull())bit^=tot;
+    tot<<=1;
   }
-  for(int i=0;i<num/32+1;i++) {
-    MACH_WRITE_UINT32(buf+size,bit);
-    size+=sizeof(uint32_t);
-  }
+  MACH_WRITE_TO(uint64_t,buf+size,bit);
+  size+=sizeof(uint64_t);
   for(int i=0;i<num;i++){
     size+=fields_[i]->SerializeTo(buf+size);
   }
@@ -36,19 +34,18 @@ uint32_t Row::DeserializeFrom(char *buf, Schema *schema) {
   uint32_t size=0;
   uint32_t num=MACH_READ_UINT32(buf);
   size+=sizeof(uint32_t);
-  uint32_t bit;
-    bit= MACH_READ_UINT32(buf+size);
-    size+=sizeof(uint32_t);
+  uint64_t bit;
+  bit= MACH_READ_FROM(uint64_t ,buf+size);
+    size+=sizeof(uint64_t);
     fields_.clear();
     for (int j = 0;  j < num; j++) {
       Field *ff= nullptr;
-      bit >>= 1;
       if (bit & 1) {
         size += Field::DeserializeFrom(buf + size,schema->GetColumn(j)->GetType() , &ff, false);
       }
       else size += Field::DeserializeFrom(buf + size,schema->GetColumn(j)->GetType() , &ff, true);
       fields_.push_back(ff);
-
+      bit>>=1;
     }
   page_id_t pageId= MACH_READ_FROM(page_id_t,buf+size);
   size+=sizeof(int32_t);
@@ -64,7 +61,7 @@ uint32_t Row::GetSerializedSize(Schema *schema) const {
   ASSERT(schema->GetColumnCount() == fields_.size(), "Fields size do not match schema's column size.");
   uint32_t size=0;
   size+=sizeof(uint32_t);
-  size+=sizeof(uint32_t)*(fields_.size()/32+1);
+  size+=sizeof(uint64_t);
   for(int i=0;i<fields_.size();i++){
       if(fields_[i]->IsNull())continue;
       size+=fields_[i]->GetSerializedSize();
