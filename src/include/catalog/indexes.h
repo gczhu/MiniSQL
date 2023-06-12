@@ -88,6 +88,8 @@ class IndexInfo {
   IndexMetadata *meta_data_;
   Index *index_;
   IndexSchema *key_schema_;
+  /*Important change*/
+  TableInfo* table_Info_;
 };
 
 #endif  // MINISQL_INDEXES_H
