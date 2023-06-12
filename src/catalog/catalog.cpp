@@ -132,12 +132,13 @@ CatalogManager::~CatalogManager() {
  */
   FlushCatalogMetaPage();
   delete catalog_meta_;
-  for (auto iter : tables_) {
+  /*注释这一部分的代码以避免double free报错*/
+  /*for (auto iter : tables_) {
     delete iter.second;
   }
   for (auto iter : indexes_) {
     delete iter.second;
-  }
+  }*/
 }
 
 /**
