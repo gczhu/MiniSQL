@@ -5,6 +5,7 @@
  */
 uint32_t Row::SerializeTo(char *buf, Schema *schema) const {
   ASSERT(schema != nullptr, "Invalid schema before serialize.");
+  //std::cout<<schema->GetColumnCount()<<" "<<fields_.size()<<std::endl;
   ASSERT(schema->GetColumnCount() == fields_.size(), "Fields size do not match schema's column size.");
   uint32_t size=0;
   uint32_t num=fields_.size();
@@ -47,7 +48,7 @@ uint32_t Row::DeserializeFrom(char *buf, Schema *schema) {
 
 uint32_t Row::GetSerializedSize(Schema *schema) const {
   ASSERT(schema != nullptr, "Invalid schema before serialize.");
-  if(schema->GetColumnCount() != fields_.size())std::cout<<schema->GetColumnCount()<<" "<<fields_.size()<<std::endl;
+  //if(schema->GetColumnCount() != fields_.size())std::cout<<schema->GetColumnCount()<<" "<<fields_.size()<<std::endl;
   ASSERT(schema->GetColumnCount() == fields_.size(), "Fields size do not match schema's column size.");
   uint32_t size=0;
   size+=sizeof(uint32_t);

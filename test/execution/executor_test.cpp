@@ -64,7 +64,7 @@ TEST_F(ExecutorTest, SimpleDeleteTest) {
   }
 
   // DELETE FROM table-1 WHERE id == 50
-  const Row index_key = Row(result_set[0]);
+  Row index_key = Row(result_set[0]);
   auto delete_plan = std::make_shared<DeletePlanNode>(out_schema, scan_plan, table_info->GetTableName());
   GetExecutionEngine()->ExecutePlan(delete_plan, &result_set, GetTxn(), GetExecutorContext());
   result_set.clear();
@@ -75,46 +75,48 @@ TEST_F(ExecutorTest, SimpleDeleteTest) {
 
   // Ensure the key was removed from the index
   std::vector<RowId> rids{};
-  index_info->GetIndex()->ScanKey(index_key, rids, GetTxn());
+  Row row_;
+  index_key.GetKeyFromRow(table_info->GetSchema(),index_info->GetIndexKeySchema(),row_);
+  index_info->GetIndex()->ScanKey(row_, rids, GetTxn());
   ASSERT_TRUE(rids.empty());
 }
 
 // INSERT INTO table-1 VALUES (1001, "aaa", 2.33);
-//TEST_F(ExecutorTest, SimpleRawInsertTest) {
-//  // Create values plan node
-//  auto const1 = MakeConstantValueExpression(Field(kTypeInt, 1001));
-//  auto const2 = MakeConstantValueExpression(Field(kTypeChar, const_cast<char *>("aaa"), 3, false));
-//  auto const3 = MakeConstantValueExpression(Field(kTypeFloat, static_cast<float>(2.33)));
-//  std::vector<std::vector<AbstractExpressionRef>> raw_values{{const1, const2, const3}};
-//  auto value_plan = std::make_shared<ValuesPlanNode>(nullptr, raw_values);
-//
-//  // Create insert plan node
-//  TableInfo *table_info;
-//  GetExecutorContext()->GetCatalog()->GetTable("table-1", table_info);
-//  auto insert_plan = std::make_shared<InsertPlanNode>(nullptr, value_plan, "table-1");
-//
-//  // Execute insert plan, then iterate through table make sure that values were inserted
-//  std::vector<Row> result_set{};
-//  GetExecutionEngine()->ExecutePlan(insert_plan, &result_set, GetTxn(), GetExecutorContext());
-//  result_set.clear();
-//
-//  // SELECT * FROM table-1 where id = 1001;
-//  const Schema *schema = table_info->GetSchema();
-//  auto col_a = MakeColumnValueExpression(*schema, 0, "id");
-//  auto const500 = MakeConstantValueExpression(Field(kTypeInt, 1001));
-//  auto predicate = MakeComparisonExpression(col_a, const500, "=");
-//  auto scan_plan = make_shared<SeqScanPlanNode>(schema, table_info->GetTableName(), predicate);
-//
-//  GetExecutionEngine()->ExecutePlan(scan_plan, &result_set, GetTxn(), GetExecutorContext());
-//
-//  // Size
-//  ASSERT_EQ(result_set.size(), 1);
-//
-//  // Value
-//  ASSERT_TRUE(result_set[0].GetField(0)->CompareEquals(Field(kTypeInt, 1001)));
-//  ASSERT_TRUE(result_set[0].GetField(1)->CompareEquals(Field(kTypeChar, const_cast<char *>("aaa"), 3, false)));
-//  ASSERT_TRUE(result_set[0].GetField(2)->CompareEquals(Field(kTypeFloat, static_cast<float>(2.33))));
-//}
+TEST_F(ExecutorTest, SimpleRawInsertTest) {
+  // Create values plan node
+  auto const1 = MakeConstantValueExpression(Field(kTypeInt, 1001));
+  auto const2 = MakeConstantValueExpression(Field(kTypeChar, const_cast<char *>("aaa"), 3, false));
+  auto const3 = MakeConstantValueExpression(Field(kTypeFloat, static_cast<float>(2.33)));
+  std::vector<std::vector<AbstractExpressionRef>> raw_values{{const1, const2, const3}};
+  auto value_plan = std::make_shared<ValuesPlanNode>(nullptr, raw_values);
+
+  // Create insert plan node
+  TableInfo *table_info;
+  GetExecutorContext()->GetCatalog()->GetTable("table-1", table_info);
+  auto insert_plan = std::make_shared<InsertPlanNode>(nullptr, value_plan, "table-1");
+
+  // Execute insert plan, then iterate through table make sure that values were inserted
+  std::vector<Row> result_set{};
+  GetExecutionEngine()->ExecutePlan(insert_plan, &result_set, GetTxn(), GetExecutorContext());
+  result_set.clear();
+
+  // SELECT * FROM table-1 where id = 1001;
+  const Schema *schema = table_info->GetSchema();
+  auto col_a = MakeColumnValueExpression(*schema, 0, "id");
+  auto const500 = MakeConstantValueExpression(Field(kTypeInt, 1001));
+  auto predicate = MakeComparisonExpression(col_a, const500, "=");
+  auto scan_plan = make_shared<SeqScanPlanNode>(schema, table_info->GetTableName(), predicate);
+
+  GetExecutionEngine()->ExecutePlan(scan_plan, &result_set, GetTxn(), GetExecutorContext());
+
+  // Size
+  ASSERT_EQ(result_set.size(), 1);
+
+  // Value
+  ASSERT_TRUE(result_set[0].GetField(0)->CompareEquals(Field(kTypeInt, 1001)));
+  ASSERT_TRUE(result_set[0].GetField(1)->CompareEquals(Field(kTypeChar, const_cast<char *>("aaa"), 3, false)));
+  ASSERT_TRUE(result_set[0].GetField(2)->CompareEquals(Field(kTypeFloat, static_cast<float>(2.33))));
+}
 
 // UPDATE table-1 SET name = "minisql" where id = 500;
 TEST_F(ExecutorTest, SimpleUpdateTest) {

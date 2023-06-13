@@ -23,7 +23,7 @@ class Field {
   explicit Field(const TypeId type) : type_id_(type), len_(FIELD_NULL_LEN), is_null_(true) {}
 
   ~Field() {
-    if (type_id_ == TypeId::kTypeChar && manage_data_) {
+    if (type_id_ == TypeId::kTypeChar && manage_data_ && value_.chars_!= nullptr) {
       delete[] value_.chars_;
     }
   }

@@ -15,11 +15,11 @@ UpdateExecutor::UpdateExecutor(ExecuteContext *exec_ctx, const UpdatePlanNode *p
 void UpdateExecutor::Init() {
   exec_ctx_->GetCatalog()->GetTable(plan_->GetTableName(),table_);
   exec_ctx_->GetCatalog()->GetTableIndexes(plan_->GetTableName(),index_info_);
+  child_executor_->Init();
 }
 
 bool UpdateExecutor::Next([[maybe_unused]] Row *row, RowId *rid) {
   Row* row_;
-  child_executor_->Init();
   while(child_executor_->Next(row_, nullptr)){
     bool ok=0;
     for(int i=0;i<index_info_.size();i++){

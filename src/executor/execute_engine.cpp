@@ -90,11 +90,8 @@ dberr_t ExecuteEngine::ExecutePlan(const AbstractPlanNodeRef &plan, std::vector<
     executor->Init();
     RowId rid{};
     Row row{};
-    //std::cout<<"QAQ"<<std::endl;
     while (executor->Next(&row, &rid)) {
-      //std::cout<<"F";
       if (result_set != nullptr) {
-        //std::cout<<"lny"<<std::endl;
         result_set->push_back(row);
       }
     }

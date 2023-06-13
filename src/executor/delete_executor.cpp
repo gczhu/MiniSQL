@@ -23,14 +23,12 @@ void DeleteExecutor::Init() {
 bool DeleteExecutor::Next([[maybe_unused]] Row *row, RowId *rid) {
   Row del_;
   RowId deli_;
-  std::cout<<index_.size()<<"Q"<<std::endl;
   if(child_executor_->Next(&del_, &deli_)){
     //std::cout<<del_.GetFields().size()<<std::endl;
     for(int i=0;i<index_.size();i++){
       Row row_;
-//      std::cout<<index_[i]->GetIndexKeySchema()->GetColumnCount()<<std::endl;
       del_.GetKeyFromRow(table_->GetSchema(),index_[i]->GetIndexKeySchema(),row_);
-      index_[i]->GetIndex()->RemoveEntry(del_,deli_, nullptr);
+      index_[i]->GetIndex()->RemoveEntry(row_,deli_, nullptr);
     }
     table_->GetTableHeap()->MarkDelete(deli_, nullptr);
   }

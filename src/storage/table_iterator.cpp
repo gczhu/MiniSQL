@@ -55,7 +55,6 @@ TableIterator &TableIterator::operator=(const TableIterator &itr) noexcept {
 TableIterator &TableIterator::operator++() {
   Page *page = buffer_->FetchPage(row_.GetPageId());
   RowId nxt=INVALID_ROWID;
-  //std::cout<<page->GetPageId()<<"QAQ"<<row_.GetPageId()<<std::endl;
   while(!reinterpret_cast<TablePage *>(page)->GetNextTupleRid(row_,&nxt)){
     page_id_t nxt_page=reinterpret_cast<TablePage *>(page)->GetNextPageId();
     if(nxt_page==INVALID_PAGE_ID)break;
