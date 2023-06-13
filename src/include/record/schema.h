@@ -28,12 +28,18 @@ class Schema {
   inline const Column *GetColumn(const uint32_t column_index) const { return columns_[column_index]; }
 
   dberr_t GetColumnIndex(const std::string &col_name, uint32_t &index) const {
+
     for (uint32_t i = 0; i < columns_.size(); ++i) {
+//      std::cout<<col_name<<std::endl;
+//      std::cout<<columns_[i]->GetName()<<std::endl;
       if (columns_[i]->GetName() == col_name) {
+        //std::cout<<"???"<<std::endl;
         index = i;
         return DB_SUCCESS;
       }
+
     }
+
     return DB_COLUMN_NAME_NOT_EXIST;
   }
 

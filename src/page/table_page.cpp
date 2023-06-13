@@ -180,6 +180,7 @@ bool TablePage::GetFirstTupleRid(RowId *first_rid) {
 }
 
 bool TablePage::GetNextTupleRid(const RowId &cur_rid, RowId *next_rid) {
+  //std::cout<<cur_rid.GetPageId()<<" "<<GetTablePageId()<<std::endl;
   ASSERT(cur_rid.GetPageId() == GetTablePageId(), "Wrong table!");
   // Find and return the first valid tuple after our current slot number.
   for (auto i = cur_rid.GetSlotNum() + 1; i < GetTupleCount(); i++) {

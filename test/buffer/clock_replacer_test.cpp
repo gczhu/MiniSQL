@@ -10,7 +10,7 @@
 #include "gtest/gtest.h"
 
 TEST(ClockReplacerTest, SampleTest) {
-  ClockReplacer clock_replacer(7);
+  CLOCKReplacer clock_replacer(7);
 
   // Scenario: unpin six elements, i.e. add them to the replacer.
   clock_replacer.Unpin(1);
@@ -50,7 +50,7 @@ TEST(ClockReplacerTest, SampleTest) {
 }
 
 TEST(ClockReplacerTest, CornerCaseTest) {
-  ClockReplacer clock_replacer(4);
+  CLOCKReplacer clock_replacer(4);
   int value;
   bool result = clock_replacer.Victim(&value);
   EXPECT_FALSE(result);

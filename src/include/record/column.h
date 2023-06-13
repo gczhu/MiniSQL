@@ -2,6 +2,7 @@
 #define MINISQL_COLUMN_H
 
 #include <string>
+#include <iostream>
 
 #include "common/macros.h"
 #include "record/types.h"
@@ -16,7 +17,10 @@ class Column {
 
   Column(const Column *other);
 
-  std::string GetName() const { return name_; }
+  std::string GetName() const {
+    //std::cout<<name_.size()<<std::endl;
+    return name_;
+  }
 
   uint32_t GetLength() const { return len_; }
 

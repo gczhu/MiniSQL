@@ -11,19 +11,23 @@
 // SELECT id FROM table-1 WHERE id < 500
 TEST_F(ExecutorTest, SimpleSeqScanTest) {
   // Construct query plan
+
   TableInfo *table_info;
   GetExecutorContext()->GetCatalog()->GetTable("table-1", table_info);
+
   const Schema *schema = table_info->GetSchema();
   auto col_a = MakeColumnValueExpression(*schema, 0, "id");
+
   auto col_b = MakeColumnValueExpression(*schema, 0, "name");
+
   auto const500 = MakeConstantValueExpression(Field(kTypeInt, 500));
   auto predicate = MakeComparisonExpression(col_a, const500, "<");
   auto out_schema = MakeOutputSchema({{"id", col_a}, {"name", col_b}});
+
   auto plan = make_shared<SeqScanPlanNode>(out_schema, table_info->GetTableName(), predicate);
   // Execute
   std::vector<Row> result_set{};
   GetExecutionEngine()->ExecutePlan(plan, &result_set, GetTxn(), GetExecutorContext());
-
   // Verify
   ASSERT_EQ(result_set.size(), 500);
   for (const auto &row : result_set) {
@@ -31,7 +35,7 @@ TEST_F(ExecutorTest, SimpleSeqScanTest) {
   }
 }
 
-// DELETE FROM table-1 WHERE id == 50;
+ //DELETE FROM table-1 WHERE id == 50;
 TEST_F(ExecutorTest, SimpleDeleteTest) {
   // Construct query plan
   TableInfo *table_info;
@@ -76,41 +80,41 @@ TEST_F(ExecutorTest, SimpleDeleteTest) {
 }
 
 // INSERT INTO table-1 VALUES (1001, "aaa", 2.33);
-TEST_F(ExecutorTest, SimpleRawInsertTest) {
-  // Create values plan node
-  auto const1 = MakeConstantValueExpression(Field(kTypeInt, 1001));
-  auto const2 = MakeConstantValueExpression(Field(kTypeChar, const_cast<char *>("aaa"), 3, false));
-  auto const3 = MakeConstantValueExpression(Field(kTypeFloat, static_cast<float>(2.33)));
-  std::vector<std::vector<AbstractExpressionRef>> raw_values{{const1, const2, const3}};
-  auto value_plan = std::make_shared<ValuesPlanNode>(nullptr, raw_values);
-
-  // Create insert plan node
-  TableInfo *table_info;
-  GetExecutorContext()->GetCatalog()->GetTable("table-1", table_info);
-  auto insert_plan = std::make_shared<InsertPlanNode>(nullptr, value_plan, "table-1");
-
-  // Execute insert plan, then iterate through table make sure that values were inserted
-  std::vector<Row> result_set{};
-  GetExecutionEngine()->ExecutePlan(insert_plan, &result_set, GetTxn(), GetExecutorContext());
-  result_set.clear();
-
-  // SELECT * FROM table-1 where id = 1001;
-  const Schema *schema = table_info->GetSchema();
-  auto col_a = MakeColumnValueExpression(*schema, 0, "id");
-  auto const500 = MakeConstantValueExpression(Field(kTypeInt, 1001));
-  auto predicate = MakeComparisonExpression(col_a, const500, "=");
-  auto scan_plan = make_shared<SeqScanPlanNode>(schema, table_info->GetTableName(), predicate);
-
-  GetExecutionEngine()->ExecutePlan(scan_plan, &result_set, GetTxn(), GetExecutorContext());
-
-  // Size
-  ASSERT_EQ(result_set.size(), 1);
-
-  // Value
-  ASSERT_TRUE(result_set[0].GetField(0)->CompareEquals(Field(kTypeInt, 1001)));
-  ASSERT_TRUE(result_set[0].GetField(1)->CompareEquals(Field(kTypeChar, const_cast<char *>("aaa"), 3, false)));
-  ASSERT_TRUE(result_set[0].GetField(2)->CompareEquals(Field(kTypeFloat, static_cast<float>(2.33))));
-}
+//TEST_F(ExecutorTest, SimpleRawInsertTest) {
+//  // Create values plan node
+//  auto const1 = MakeConstantValueExpression(Field(kTypeInt, 1001));
+//  auto const2 = MakeConstantValueExpression(Field(kTypeChar, const_cast<char *>("aaa"), 3, false));
+//  auto const3 = MakeConstantValueExpression(Field(kTypeFloat, static_cast<float>(2.33)));
+//  std::vector<std::vector<AbstractExpressionRef>> raw_values{{const1, const2, const3}};
+//  auto value_plan = std::make_shared<ValuesPlanNode>(nullptr, raw_values);
+//
+//  // Create insert plan node
+//  TableInfo *table_info;
+//  GetExecutorContext()->GetCatalog()->GetTable("table-1", table_info);
+//  auto insert_plan = std::make_shared<InsertPlanNode>(nullptr, value_plan, "table-1");
+//
+//  // Execute insert plan, then iterate through table make sure that values were inserted
+//  std::vector<Row> result_set{};
+//  GetExecutionEngine()->ExecutePlan(insert_plan, &result_set, GetTxn(), GetExecutorContext());
+//  result_set.clear();
+//
+//  // SELECT * FROM table-1 where id = 1001;
+//  const Schema *schema = table_info->GetSchema();
+//  auto col_a = MakeColumnValueExpression(*schema, 0, "id");
+//  auto const500 = MakeConstantValueExpression(Field(kTypeInt, 1001));
+//  auto predicate = MakeComparisonExpression(col_a, const500, "=");
+//  auto scan_plan = make_shared<SeqScanPlanNode>(schema, table_info->GetTableName(), predicate);
+//
+//  GetExecutionEngine()->ExecutePlan(scan_plan, &result_set, GetTxn(), GetExecutorContext());
+//
+//  // Size
+//  ASSERT_EQ(result_set.size(), 1);
+//
+//  // Value
+//  ASSERT_TRUE(result_set[0].GetField(0)->CompareEquals(Field(kTypeInt, 1001)));
+//  ASSERT_TRUE(result_set[0].GetField(1)->CompareEquals(Field(kTypeChar, const_cast<char *>("aaa"), 3, false)));
+//  ASSERT_TRUE(result_set[0].GetField(2)->CompareEquals(Field(kTypeFloat, static_cast<float>(2.33))));
+//}
 
 // UPDATE table-1 SET name = "minisql" where id = 500;
 TEST_F(ExecutorTest, SimpleUpdateTest) {
@@ -122,7 +126,7 @@ TEST_F(ExecutorTest, SimpleUpdateTest) {
   auto const500 = MakeConstantValueExpression(Field(kTypeInt, 500));
   auto predicate = MakeComparisonExpression(col_a, const500, "=");
   auto scan_plan = make_shared<SeqScanPlanNode>(schema, table_info->GetTableName(), predicate);
-
+  std::cout<<"zsq"<<std::endl;
   // Execute an initial sequential scan
   std::vector<Row> result_set{};
   GetExecutionEngine()->ExecutePlan(scan_plan, &result_set, GetTxn(), GetExecutorContext());

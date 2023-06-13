@@ -12,13 +12,15 @@ class TableIterator {
 public:
   explicit TableIterator(BufferPoolManager *buffer_pool_manager, Schema *schema,RowId rowId);
 
+  explicit TableIterator();
+
   explicit TableIterator(const TableIterator &other);
 
   virtual ~TableIterator();
 
-  inline bool operator==(const TableIterator &itr) const;
+  bool operator==(const TableIterator &itr) const;
 
-  inline bool operator!=(const TableIterator &itr) const;
+  bool operator!=(const TableIterator &itr) const;
 
   const Row &operator*();
 

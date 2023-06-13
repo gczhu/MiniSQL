@@ -41,6 +41,9 @@ class InsertExecutor : public AbstractExecutor {
   /** @return The output schema for the insert */
   const Schema *GetOutputSchema() const override { return plan_->OutputSchema(); }
 
+  TableInfo* table_ = nullptr;
+  std::vector<IndexInfo*> index_;
+
  private:
   /** The insert plan node to be executed*/
   const InsertPlanNode *plan_;

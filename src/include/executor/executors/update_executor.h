@@ -43,6 +43,8 @@ class UpdateExecutor : public AbstractExecutor {
   /** @return The output schema for the update */
   const Schema *GetOutputSchema() const override { return plan_->OutputSchema(); }
 
+  TableInfo* table_ = nullptr;
+
  private:
   /**
    * Given a row, creates a new, updated row

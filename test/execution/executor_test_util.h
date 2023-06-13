@@ -43,8 +43,9 @@ class ExecutorTest : public ::testing::Test {
     std::vector<Column *> columns = {new Column("id", TypeId::kTypeInt, 0, false, false),
                                      new Column("name", TypeId::kTypeChar, 64, 1, true, false),
                                      new Column("account", TypeId::kTypeFloat, 2, true, false)};
-    auto schema = std::make_shared<Schema>(columns);
-    catalog_01->CreateTable("table-1", schema.get(), txn_, table_info);
+    auto schema = new Schema(columns);
+    catalog_01->CreateTable("table-1", schema, txn_, table_info);
+    //std::cout<<"fff"<<table_info->GetSchema()->GetColumns()[0]->GetName()<<std::endl;
     TableHeap *table_heap = table_info->GetTableHeap();
     for (int i = 0; i < 1000; i++) {
       int32_t len = RandomUtils::RandomInt(0, 64);
@@ -85,8 +86,10 @@ class ExecutorTest : public ::testing::Test {
    */
   AbstractExpressionRef MakeColumnValueExpression(const Schema &schema, uint32_t row_idx, const std::string &col_name) {
     uint32_t col_idx;
+
     schema.GetColumnIndex(col_name, col_idx);
     auto col_type = schema.GetColumn(col_idx)->GetType();
+
     allocated_exprs_.emplace_back(std::make_shared<ColumnValueExpression>(row_idx, col_idx, col_type));
     return allocated_exprs_.back();
   }

@@ -6,6 +6,8 @@
 TableIterator::TableIterator(BufferPoolManager *buffer_pool_manager, Schema *schema,RowId rowId)
     :row_(rowId),buffer_(buffer_pool_manager),schema_(schema){}
 
+TableIterator::TableIterator(){}
+
 TableIterator::TableIterator(const TableIterator &other) {
   row_=other.row_;
   buffer_=other.buffer_;
@@ -13,8 +15,6 @@ TableIterator::TableIterator(const TableIterator &other) {
 }
 
 TableIterator::~TableIterator() {
-  delete buffer_;
-  delete schema_;
   if(row!=nullptr)delete row;
 }
 
@@ -54,12 +54,14 @@ TableIterator &TableIterator::operator=(const TableIterator &itr) noexcept {
 // ++iter
 TableIterator &TableIterator::operator++() {
   Page *page = buffer_->FetchPage(row_.GetPageId());
-  RowId nxt;
+  RowId nxt=INVALID_ROWID;
+  //std::cout<<page->GetPageId()<<"QAQ"<<row_.GetPageId()<<std::endl;
   while(!reinterpret_cast<TablePage *>(page)->GetNextTupleRid(row_,&nxt)){
     page_id_t nxt_page=reinterpret_cast<TablePage *>(page)->GetNextPageId();
     if(nxt_page==INVALID_PAGE_ID)break;
     buffer_->UnpinPage(page->GetPageId(),page->IsDirty());
     page=buffer_->FetchPage(nxt_page);
+    if(reinterpret_cast<TablePage *>(page)->GetFirstTupleRid(&nxt))break;
   }
   row_=nxt;
   return *this;

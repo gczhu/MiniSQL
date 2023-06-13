@@ -60,9 +60,9 @@ class IndexInfo {
     delete key_schema_;
   }
 
-/**
+  /**
  * TODO: Student Implement
- */
+   */
   void Init(IndexMetadata *meta_data, TableInfo *table_info, BufferPoolManager *buffer_pool_manager) {
     // Step1: init index metadata and table info
     this->meta_data_ = meta_data;
@@ -88,6 +88,8 @@ class IndexInfo {
   IndexMetadata *meta_data_;
   Index *index_;
   IndexSchema *key_schema_;
+  /*Important change*/
+  TableInfo* table_Info_;
 };
 
 #endif  // MINISQL_INDEXES_H

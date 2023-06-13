@@ -16,8 +16,7 @@
  */
 class ColumnValueExpression : public AbstractExpression {
  public:
-  /**
-   * ColumnValueExpression is an abstraction around "Table.member" in terms of indexes.
+  /**   * ColumnValueExpression is an abstraction around "Table.member" in terms of indexes.
    * @param row_idx {row index 0 = left side of join, row index 1 = right side of join}
    * @param col_idx the index of the column in the schema
    * @param ret_type the return type of the expression

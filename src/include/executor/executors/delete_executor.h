@@ -44,6 +44,9 @@ class DeleteExecutor : public AbstractExecutor {
   const Schema *GetOutputSchema() const override { return plan_->OutputSchema(); }
 
  private:
+
+  TableInfo* table_ = nullptr;
+  std::vector<IndexInfo*> index_;
   /** The delete plan node to be executed */
   const DeletePlanNode *plan_;
   /** The child executor from which RIDs for deleted rows are pulled */

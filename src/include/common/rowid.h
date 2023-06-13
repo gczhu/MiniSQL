@@ -26,6 +26,23 @@ class RowId {
     page_id_ = page_id;
     slot_num_ = slot_num;
   }
+  RowId &operator=(const RowId &other) {
+    this->page_id_=other.page_id_;
+    this->slot_num_=other.slot_num_;
+    return *this;
+  }
+
+  bool operator<(const RowId &other) {
+    if(this->page_id_<other.page_id_)return true;
+    else if(this->page_id_==other.page_id_&&this->slot_num_<other.slot_num_)return true;
+    return false;
+  }
+
+  bool operator>(const RowId &other) {
+    if(this->page_id_>other.page_id_)return true;
+    else if(this->page_id_==other.page_id_&&this->slot_num_>other.slot_num_)return true;
+    return false;
+  }
 
   bool operator==(const RowId &other) const { return page_id_ == other.page_id_ && slot_num_ == other.slot_num_; }
 

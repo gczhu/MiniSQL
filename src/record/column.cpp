@@ -90,6 +90,7 @@ uint32_t Column::DeserializeFrom(char *buf, Column *&column) {
     size+=4;
     std::string name_={};
     for(int i=0;i<length;i++)name_.push_back(MACH_READ_FROM(int8_t,buf+size++));
+    name_.push_back('\0');
     TypeId id=MACH_READ_FROM(TypeId,buf+size);
     size+=sizeof(TypeId);
     int32_t len=0;

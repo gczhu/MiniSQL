@@ -34,6 +34,9 @@ class IndexScanExecutor : public AbstractExecutor {
   /** @return The output schema for the sequential scan */
   const Schema *GetOutputSchema() const override { return plan_->OutputSchema(); }
 
+  std::vector<RowId> result;
+
+
  private:
 
   /** The sequential scan plan node to be executed */
