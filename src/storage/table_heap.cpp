@@ -3,10 +3,11 @@
 /**
  * TODO: Student Implement
  */
-bool TableHeap::InsertTuple(Row &row, Transaction *txn) {//这里fetch出来的还没Unpin回去，暂时没想到比较好的方法
+bool TableHeap::InsertTuple(Row &row, Transaction *txn) {
   Page *page = buffer_pool_manager_->FetchPage(first_page_id_);
   while(!reinterpret_cast<TablePage *>(page)->InsertTuple(row,schema_,txn,lock_manager_,log_manager_)){
     if(reinterpret_cast<TablePage *>(page)->GetNextPageId()!=INVALID_PAGE_ID){
+      buffer_pool_manager_->UnpinPage(page->GetPageId(),page->IsDirty());
       page = buffer_pool_manager_->FetchPage(reinterpret_cast<TablePage *>(page)->GetNextPageId());
     }
     else{
@@ -17,6 +18,7 @@ bool TableHeap::InsertTuple(Row &row, Transaction *txn) {//这里fetch出来的�
       if(!reinterpret_cast<TablePage *>(new_page)->InsertTuple(row,schema_,txn,lock_manager_,log_manager_)){
         return false;
       }
+      buffer_pool_manager_->UnpinPage(new_page->GetPageId(),new_page->IsDirty());
       break;
     }
   }

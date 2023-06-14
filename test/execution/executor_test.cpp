@@ -83,6 +83,7 @@ TEST_F(ExecutorTest, SimpleDeleteTest) {
 
 // INSERT INTO table-1 VALUES (1001, "aaa", 2.33);
 TEST_F(ExecutorTest, SimpleRawInsertTest) {
+
   // Create values plan node
   auto const1 = MakeConstantValueExpression(Field(kTypeInt, 1001));
   auto const2 = MakeConstantValueExpression(Field(kTypeChar, const_cast<char *>("aaa"), 3, false));
@@ -90,6 +91,11 @@ TEST_F(ExecutorTest, SimpleRawInsertTest) {
   std::vector<std::vector<AbstractExpressionRef>> raw_values{{const1, const2, const3}};
   auto value_plan = std::make_shared<ValuesPlanNode>(nullptr, raw_values);
 
+  IndexInfo *index_info = nullptr;
+  std::vector<std::string> index_keys{"id"};
+  auto r3 =
+      GetExecutorContext()->GetCatalog()->CreateIndex("table-1", "index-1", index_keys, GetTxn(), index_info, "bptree");
+  ASSERT_EQ(DB_SUCCESS, r3);
   // Create insert plan node
   TableInfo *table_info;
   GetExecutorContext()->GetCatalog()->GetTable("table-1", table_info);
@@ -106,7 +112,6 @@ TEST_F(ExecutorTest, SimpleRawInsertTest) {
   auto const500 = MakeConstantValueExpression(Field(kTypeInt, 1001));
   auto predicate = MakeComparisonExpression(col_a, const500, "=");
   auto scan_plan = make_shared<SeqScanPlanNode>(schema, table_info->GetTableName(), predicate);
-
   GetExecutionEngine()->ExecutePlan(scan_plan, &result_set, GetTxn(), GetExecutorContext());
 
   // Size
@@ -128,7 +133,12 @@ TEST_F(ExecutorTest, SimpleUpdateTest) {
   auto const500 = MakeConstantValueExpression(Field(kTypeInt, 500));
   auto predicate = MakeComparisonExpression(col_a, const500, "=");
   auto scan_plan = make_shared<SeqScanPlanNode>(schema, table_info->GetTableName(), predicate);
-  std::cout<<"zsq"<<std::endl;
+  IndexInfo *index_info = nullptr;
+  std::vector<std::string> index_keys{"id"};
+  auto r3 =
+      GetExecutorContext()->GetCatalog()->CreateIndex("table-1", "index-1", index_keys, GetTxn(), index_info, "bptree");
+  ASSERT_EQ(DB_SUCCESS, r3);
+  //std::cout<<"zsq"<<std::endl;
   // Execute an initial sequential scan
   std::vector<Row> result_set{};
   GetExecutionEngine()->ExecutePlan(scan_plan, &result_set, GetTxn(), GetExecutorContext());
@@ -158,6 +168,7 @@ TEST_F(ExecutorTest, SimpleUpdateTest) {
   ASSERT_EQ(result_set.size(), 1);
   for (const auto &row : result_set) {
     ASSERT_TRUE(row.GetField(0)->CompareEquals(Field(kTypeInt, 500)));
+    std::cout<<row.GetField(1)->toString()<<std::endl;
     ASSERT_TRUE(row.GetField(1)->CompareEquals(Field(kTypeChar, const_cast<char *>("minisql"), 7, false)));
   }
 }

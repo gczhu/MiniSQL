@@ -24,7 +24,6 @@ bool DeleteExecutor::Next([[maybe_unused]] Row *row, RowId *rid) {
   Row del_;
   RowId deli_;
   if(child_executor_->Next(&del_, &deli_)){
-    //std::cout<<del_.GetFields().size()<<std::endl;
     for(int i=0;i<index_.size();i++){
       Row row_;
       del_.GetKeyFromRow(table_->GetSchema(),index_[i]->GetIndexKeySchema(),row_);

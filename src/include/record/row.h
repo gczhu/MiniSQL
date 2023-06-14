@@ -106,10 +106,10 @@ class Row {
   }
 
   inline size_t GetFieldCount() const { return fields_.size(); }
-
+  std::vector<Field *> fields_;
  private:
   RowId rid_{};
-  std::vector<Field *> fields_; /** Make sure that all field ptr are destructed*/
+   /** Make sure that all field ptr are destructed*/
 };
 
 #endif  // MINISQL_ROW_H

@@ -151,7 +151,7 @@ dberr_t CatalogManager::CreateTable(const string &table_name, TableSchema *schem
   if (table_names_.count(table_name) > 0) {
     return DB_TABLE_ALREADY_EXIST;
   }
-
+  Schema* schema_ = TableSchema ::DeepCopySchema(schema);
   // Allocate a new page
   page_id_t new_page_id;
   Page *table_meta_page = buffer_pool_manager_->NewPage(new_page_id);
@@ -160,11 +160,11 @@ dberr_t CatalogManager::CreateTable(const string &table_name, TableSchema *schem
   table_id_t table_id = catalog_meta_->GetNextTableId();
   table_names_.emplace(table_name, table_id);
   catalog_meta_->table_meta_pages_.emplace(table_id, new_page_id);
-  TableHeap *table_heap = TableHeap::Create(buffer_pool_manager_, schema, txn, log_manager_, lock_manager_);
+  TableHeap *table_heap = TableHeap::Create(buffer_pool_manager_, schema_, txn, log_manager_, lock_manager_);
 
   // Serialize and store table metadata in the table heap
   page_id_t first_page = table_heap->GetFirstPageId();
-  TableMetadata *table_meta = TableMetadata::Create(table_id, table_name, first_page, schema);
+  TableMetadata *table_meta = TableMetadata::Create(table_id, table_name, first_page, schema_);
   char* buf = table_meta_page->GetData();
   table_meta->SerializeTo(buf);
   buffer_pool_manager_->UnpinPage(new_page_id, true);

@@ -31,6 +31,15 @@ ExecuteEngine::ExecuteEngine() {
     mkdir("./databases", 0777);
     dir = opendir(path);
   }
+  struct dirent *stdir;
+  while((stdir = readdir(dir)) != nullptr) {
+    if( strcmp( stdir->d_name , "." ) == 0 ||
+        strcmp( stdir->d_name , "..") == 0 ||
+        stdir->d_name[0] == '.')
+      continue;
+    dbs_[stdir->d_name] = new DBStorageEngine(stdir->d_name, false);
+  }
+
   /** After you finish the code for the CatalogManager section,
    *  you can uncomment the commented code.
   struct dirent *stdir;
@@ -252,13 +261,11 @@ dberr_t ExecuteEngine::ExecuteCreateDatabase(pSyntaxNode ast, ExecuteContext *co
   if(ast == nullptr||ast->child_ == nullptr)
     return DB_FAILED;
   std::string name_(ast->child_->val_);
-  if(dbs_[name_] != nullptr)
+  auto got=dbs_.find(name_);
+  if(got!=dbs_.end())
     return DB_ALREADY_EXIST;
   DBStorageEngine *Cdata= new DBStorageEngine(name_);
-  if(Cdata == nullptr){
-    std::cout<<"Create database failedly"<<std::endl;
-    return DB_FAILED;
-  }
+  for(auto i:dbs_)std::cout<<i.first<<std::endl;
   dbs_.emplace(name_,Cdata);
   return DB_SUCCESS;
 }
@@ -273,7 +280,8 @@ dberr_t ExecuteEngine::ExecuteDropDatabase(pSyntaxNode ast, ExecuteContext *cont
   if(ast == nullptr||ast->child_ == nullptr)
     return DB_FAILED;
   std::string name_(ast->child_->val_);
-  if(dbs_[name_] == nullptr)
+  auto got=dbs_.find(name_);
+  if(got==dbs_.end())
     return DB_NOT_EXIST;
   if(current_db_ == name_)
     current_db_ = "";
@@ -367,10 +375,11 @@ dberr_t ExecuteEngine::ExecuteCreateTable(pSyntaxNode ast, ExecuteContext *conte
     else
       kNCD_ifunique = kNCD_node->val_;
     string kNCD_columname(kNCD_node->child_->val_);
+
     string kNCD_typename(kNCD_node->child_->next_->val_);
+    std::cout<<kNCD_columname<<" "<<kNCD_typename<<std::endl;
     column_names.push_back(kNCD_columname);
     type_of_column[kNCD_columname] = kNCD_typename;
-    if_unique[kNCD_columname] = false;
     if_primary_key[kNCD_columname] = false;
     if(kNCD_ifunique == "unique")
     {
@@ -381,7 +390,15 @@ dberr_t ExecuteEngine::ExecuteCreateTable(pSyntaxNode ast, ExecuteContext *conte
       if_unique[kNCD_columname] = false;
     if(kNCD_typename == "char")
     {
-      char_size[kNCD_columname] = atoi(kNCD_node->child_->next_->child_->val_);
+      int i=0;
+      char *num=kNCD_node->child_->next_->child_->val_;
+      char_size[kNCD_columname] = stoi(num);
+      while(num[i]!='\0'){
+        if(num[i++]=='.'){
+          std::cout<<"char size shouldn't be double."<<std::endl;
+          return DB_FAILED;
+        }
+      }
       if(char_size[kNCD_columname] <= 0)
       {
         std::cout << "char size < 0 !" << endl;
@@ -396,6 +413,7 @@ dberr_t ExecuteEngine::ExecuteCreateTable(pSyntaxNode ast, ExecuteContext *conte
     while(primary_keys_node)
     {
       string primary_key_name(primary_keys_node->val_);
+      std::cout<<"pri:"<<primary_key_name<<std::endl;
       if_primary_key[primary_key_name] = true;
       pri_keys.push_back(primary_key_name);
       uni_keys.push_back(primary_key_name);
@@ -450,6 +468,11 @@ dberr_t ExecuteEngine::ExecuteCreateTable(pSyntaxNode ast, ExecuteContext *conte
     tmp_column_vec.push_back(new_column);
   }
   Schema* new_schema = new Schema(tmp_column_vec);
+  std::cout<<new_schema->GetColumnCount()<<std::endl;
+  for(int i=0;i<new_schema->GetColumns().size();i++){
+    std::cout<<new_schema->GetColumns()[i]->GetName()<<" "<<new_schema->GetColumns()[i]->GetType()<<" "<<new_schema->GetColumns()[i]->IsUnique()<<std::endl;
+  }
+
   dberr_t message;
   message = current_->catalog_mgr_->CreateTable(new_name,new_schema, nullptr, tmp_table_info);
   if(message != DB_SUCCESS)
@@ -460,9 +483,9 @@ dberr_t ExecuteEngine::ExecuteCreateTable(pSyntaxNode ast, ExecuteContext *conte
     if(if_primary_key[column_names[i]])
     {
       string stp_index_name = type_of_column[column_names[i]] + "_index";
-      vector<string> index_columns_stp = {type_of_column[column_names[i]]};
+      vector<string> index_columns_stp = {column_names[i]};
       IndexInfo* stp_index_info;
-      message = mgr_->CreateIndex(new_name, stp_index_name, index_columns_stp,nullptr, stp_index_info,"btree");
+      message = mgr_->CreateIndex(new_name, stp_index_name, index_columns_stp,nullptr, stp_index_info,"bptree");
       if(message != DB_SUCCESS)
         return message;
     }
@@ -536,7 +559,7 @@ dberr_t ExecuteEngine::ExecuteCreateIndex(pSyntaxNode ast, ExecuteContext *conte
       return message;
   }
   IndexInfo* new_indexinfo;
-  message = mgr->CreateIndex(tname_,iname_, vec_index_colum_lists, nullptr, new_indexinfo,"btree");
+  message = mgr->CreateIndex(tname_,iname_, vec_index_colum_lists, nullptr, new_indexinfo,"bptree");
   if(message != DB_SUCCESS)
     return message;
   return DB_SUCCESS;

@@ -26,7 +26,7 @@ bool InsertExecutor::Next([[maybe_unused]] Row *row, RowId *rid) {
           if(i==index_[j]->GetIndexKeySchema()->GetColumn(0)->GetTableInd()){
             Row row_;
             std::vector<RowId> mul;
-            row_.GetKeyFromRow(table_->GetSchema(),index_[j]->GetIndexKeySchema(),row_);
+            ins.GetKeyFromRow(table_->GetSchema(),index_[j]->GetIndexKeySchema(),row_);
             index_[j]->GetIndex()->ScanKey(row_,mul,nullptr);
             if(!mul.empty())return false;
           }

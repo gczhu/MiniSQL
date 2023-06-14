@@ -122,6 +122,14 @@ class Field {
     return Type::GetInstance(type_id_)->CompareGreaterThanEquals(*this, o);
   }
 
+  Field &operator=(const Field &other){
+    value_=other.value_;
+    type_id_=other.type_id_;
+    len_=other.len_;
+    is_null_=other.is_null_;
+    manage_data_=other.manage_data_;
+  }
+
   friend void Swap(Field &first, Field &second) {
     std::swap(first.value_, second.value_);
     std::swap(first.type_id_, second.type_id_);

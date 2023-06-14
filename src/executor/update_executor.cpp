@@ -19,29 +19,44 @@ void UpdateExecutor::Init() {
 }
 
 bool UpdateExecutor::Next([[maybe_unused]] Row *row, RowId *rid) {
-  Row* row_;
-  while(child_executor_->Next(row_, nullptr)){
-    bool ok=0;
+  Row del_;
+  RowId deli_;
+  if(child_executor_->Next(&del_, &deli_)){
     for(int i=0;i<index_info_.size();i++){
-      if(index_info_[i]->GetIndex()->RemoveEntry(*row_,row_->GetRowId(),nullptr)!=DB_SUCCESS)
-        ok=1;
+      Row row_;
+      del_.GetKeyFromRow(table_->GetSchema(),index_info_[i]->GetIndexKeySchema(),row_);
+      index_info_[i]->GetIndex()->RemoveEntry(row_,deli_, nullptr);
     }
-    if(!ok){
-      table_->GetTableHeap()->MarkDelete(row_->GetRowId(),nullptr);
-      for(int i=0;i<index_info_.size();i++){
-        if(index_info_[i]->GetIndex()->InsertEntry(*row_,row_->GetRowId(),nullptr)!=DB_SUCCESS)
-          ok=1;
+    table_->GetTableHeap()->MarkDelete(deli_, nullptr);
+    Row upd_= GenerateUpdatedTuple(del_);
+    for(int i=0;i<table_->GetSchema()->GetColumnCount();i++){
+      if(table_->GetSchema()->GetColumn(i)->IsUnique()){
+        for(int j=0;j<index_info_.size();j++){
+          if(i==index_info_[j]->GetIndexKeySchema()->GetColumn(0)->GetTableInd()){
+            Row row_;
+            std::vector<RowId> mul;
+            upd_.GetKeyFromRow(table_->GetSchema(),index_info_[j]->GetIndexKeySchema(),row_);
+            index_info_[j]->GetIndex()->ScanKey(row_,mul,nullptr);
+            if(!mul.empty())return false;
+          }
+        }
       }
-      if(!ok){
-        table_->GetTableHeap()->InsertTuple(*row_,nullptr);
-        return true;
-      }
-
     }
+    for(int i=0;i<index_info_.size();i++){
+      Row row_;
+      upd_.GetKeyFromRow(table_->GetSchema(),index_info_[i]->GetIndexKeySchema(),row_);
+      index_info_[i]->GetIndex()->InsertEntry(row_,deli_, nullptr);
+    }
+    table_->GetTableHeap()->InsertTuple(upd_, nullptr);
   }
-  return false;
+  else return false;
 }
 
 Row UpdateExecutor::GenerateUpdatedTuple(const Row &src_row) {
-  return Row(src_row);
+  Row upd_ = src_row;
+  for(auto i:plan_->GetUpdateAttr()){
+    Field f=i.second->Evaluate(&upd_);
+    *(upd_.fields_[i.first]) = f;
+  }
+  return upd_;
 }
