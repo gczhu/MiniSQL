@@ -157,7 +157,8 @@ dberr_t CatalogManager::CreateTable(const string &table_name, TableSchema *schem
   Page *table_meta_page = buffer_pool_manager_->NewPage(new_page_id);
 
   // Allocate a new table ID
-  table_id_t table_id = catalog_meta_->GetNextTableId();
+  table_id_t table_id = catalog_meta_->GetNextTableId()+1;
+  std::cout<<table_id<<std::endl;
   table_names_.emplace(table_name, table_id);
   catalog_meta_->table_meta_pages_.emplace(table_id, new_page_id);
   TableHeap *table_heap = TableHeap::Create(buffer_pool_manager_, schema_, txn, log_manager_, lock_manager_);
@@ -173,7 +174,7 @@ dberr_t CatalogManager::CreateTable(const string &table_name, TableSchema *schem
   table_info = TableInfo::Create();
   table_info->Init(table_meta, table_heap);
   tables_.emplace(table_id, table_info);
-
+  for(auto i:tables_)std::cout<<i.second->GetTableName()<<std::endl;
   return DB_SUCCESS;
 }
 
@@ -244,7 +245,7 @@ dberr_t CatalogManager::CreateIndex(const std::string &table_name, const string 
     }
   }
 
-  index_id_t index_id = catalog_meta_->GetNextIndexId();
+  index_id_t index_id = catalog_meta_->GetNextIndexId()+1;
   index_names_[table_name][index_name] = index_id;
 
   // Allocate a new page for index meta page
@@ -318,7 +319,6 @@ dberr_t CatalogManager::DropTable(const string &table_name) {
   if (table_iter == table_names_.end()) {
     return DB_TABLE_NOT_EXIST;
   }
-
   /*fetch the table id and page id*/
   table_id_t table_id = table_iter->second;
   page_id_t page_id = catalog_meta_->table_meta_pages_[table_id];
@@ -330,19 +330,16 @@ dberr_t CatalogManager::DropTable(const string &table_name) {
       DropIndex(table_name, index_information->GetIndexName());
     }
   }
-
   /*delete from table names*/
   table_names_.erase(table_iter);
 
   /*delete from tables_*/
   tables_.erase(table_id);
-
   /*delete meta data*/
   catalog_meta_->table_meta_pages_.erase(table_id);
 
   /*delete from buffer_pool_manager_*/
   buffer_pool_manager_->DeletePage(page_id);
-
   return DB_SUCCESS;
 }
 

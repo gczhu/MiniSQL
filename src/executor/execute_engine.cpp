@@ -332,6 +332,7 @@ dberr_t ExecuteEngine::ExecuteShowTables(pSyntaxNode ast, ExecuteContext *contex
   std::vector<TableInfo *> tables;
   if(dbs_[current_db_]->catalog_mgr_->GetTables(tables)!=DB_SUCCESS)
     return DB_FAILED;
+  std::cout<<tables.size()<<std::endl;
   for(int i=0;i<tables.size();i++)
     std::cout<<tables[i]->GetTableName()<<std::endl;
   if(!tables.size())std::cout<<"There is no table in "<<current_db_<<"."<<std::endl;
@@ -375,9 +376,7 @@ dberr_t ExecuteEngine::ExecuteCreateTable(pSyntaxNode ast, ExecuteContext *conte
     else
       kNCD_ifunique = kNCD_node->val_;
     string kNCD_columname(kNCD_node->child_->val_);
-
     string kNCD_typename(kNCD_node->child_->next_->val_);
-    std::cout<<kNCD_columname<<" "<<kNCD_typename<<std::endl;
     column_names.push_back(kNCD_columname);
     type_of_column[kNCD_columname] = kNCD_typename;
     if_primary_key[kNCD_columname] = false;
@@ -392,13 +391,13 @@ dberr_t ExecuteEngine::ExecuteCreateTable(pSyntaxNode ast, ExecuteContext *conte
     {
       int i=0;
       char *num=kNCD_node->child_->next_->child_->val_;
-      char_size[kNCD_columname] = stoi(num);
       while(num[i]!='\0'){
         if(num[i++]=='.'){
           std::cout<<"char size shouldn't be double."<<std::endl;
           return DB_FAILED;
         }
       }
+      char_size[kNCD_columname] = stoi(num);
       if(char_size[kNCD_columname] <= 0)
       {
         std::cout << "char size < 0 !" << endl;
@@ -413,7 +412,6 @@ dberr_t ExecuteEngine::ExecuteCreateTable(pSyntaxNode ast, ExecuteContext *conte
     while(primary_keys_node)
     {
       string primary_key_name(primary_keys_node->val_);
-      std::cout<<"pri:"<<primary_key_name<<std::endl;
       if_primary_key[primary_key_name] = true;
       pri_keys.push_back(primary_key_name);
       uni_keys.push_back(primary_key_name);
@@ -468,10 +466,6 @@ dberr_t ExecuteEngine::ExecuteCreateTable(pSyntaxNode ast, ExecuteContext *conte
     tmp_column_vec.push_back(new_column);
   }
   Schema* new_schema = new Schema(tmp_column_vec);
-  std::cout<<new_schema->GetColumnCount()<<std::endl;
-  for(int i=0;i<new_schema->GetColumns().size();i++){
-    std::cout<<new_schema->GetColumns()[i]->GetName()<<" "<<new_schema->GetColumns()[i]->GetType()<<" "<<new_schema->GetColumns()[i]->IsUnique()<<std::endl;
-  }
 
   dberr_t message;
   message = current_->catalog_mgr_->CreateTable(new_name,new_schema, nullptr, tmp_table_info);
