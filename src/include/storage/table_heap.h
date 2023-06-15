@@ -114,6 +114,7 @@ private:
           log_manager_(log_manager),
           lock_manager_(lock_manager) {
     Page *initialize = buffer_pool_manager_->NewPage(first_page_id_);//新建一个数据页
+    last_page_id_=first_page_id_;
     reinterpret_cast<TablePage*> (initialize)->Init(first_page_id_,INVALID_PAGE_ID,nullptr,nullptr);//初始化
     buffer_pool_manager_->UnpinPage(first_page_id_,initialize->IsDirty());//解除锁定
   };
@@ -124,11 +125,14 @@ private:
         first_page_id_(first_page_id),
         schema_(schema),
         log_manager_(log_manager),
-        lock_manager_(lock_manager) {}
+        lock_manager_(lock_manager) {
+    last_page_id_=first_page_id_;
+  }
 
  private:
   BufferPoolManager *buffer_pool_manager_;
   page_id_t first_page_id_;
+  page_id_t last_page_id_;
   Schema *schema_;
   [[maybe_unused]] LogManager *log_manager_;
   [[maybe_unused]] LockManager *lock_manager_;

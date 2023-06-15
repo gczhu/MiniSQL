@@ -4,7 +4,7 @@
  * TODO: Student Implement
  */
 bool TableHeap::InsertTuple(Row &row, Transaction *txn) {
-  Page *page = buffer_pool_manager_->FetchPage(first_page_id_);
+  Page *page = buffer_pool_manager_->FetchPage(last_page_id_);
   while(!reinterpret_cast<TablePage *>(page)->InsertTuple(row,schema_,txn,lock_manager_,log_manager_)){
     if(reinterpret_cast<TablePage *>(page)->GetNextPageId()!=INVALID_PAGE_ID){
       buffer_pool_manager_->UnpinPage(page->GetPageId(),page->IsDirty());
@@ -15,6 +15,7 @@ bool TableHeap::InsertTuple(Row &row, Transaction *txn) {
       Page *new_page = buffer_pool_manager_->NewPage(nxt);
       reinterpret_cast<TablePage *>(new_page)->Init(nxt,page->GetPageId(),log_manager_,txn);
       reinterpret_cast<TablePage *>(page)->SetNextPageId(nxt);
+      last_page_id_=nxt;
       if(!reinterpret_cast<TablePage *>(new_page)->InsertTuple(row,schema_,txn,lock_manager_,log_manager_)){
         return false;
       }

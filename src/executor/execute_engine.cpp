@@ -610,10 +610,15 @@ dberr_t ExecuteEngine::ExecuteExecfile(pSyntaxNode ast, ExecuteContext *context)
 #ifdef ENABLE_EXECUTE_DEBUG
   LOG(INFO) << "ExecuteExecfile" << std::endl;
 #endif
+  clock_t start_,finish;
+  start_=clock();
   if(ast == nullptr || ast->child_ == nullptr)
     return DB_FAILED;
+  //std::cout<<"QAQ"<<std::endl;
   std::string name_(ast->child_->val_);
-  fstream exe(name_);
+  //std::cout<<name_<<std::endl;
+  fstream exe;
+  exe.open(name_);
   if(!exe.is_open()){
     std::cout<<"open "<<name_<<" "<<"failedly"<<std::endl;
     return DB_FAILED;
@@ -626,6 +631,7 @@ dberr_t ExecuteEngine::ExecuteExecfile(pSyntaxNode ast, ExecuteContext *context)
     do {
       if (exe.eof()) return DB_SUCCESS;
       tmp = exe.get();
+      if(tmp=='\r'||tmp=='\n')continue;
       sql_[num_++] = tmp;
       if(num_>max_size){
         std::cout<<"Too long for one command."<<std::endl;
@@ -633,17 +639,23 @@ dberr_t ExecuteEngine::ExecuteExecfile(pSyntaxNode ast, ExecuteContext *context)
       }
     }while(tmp!=';');
     sql_[num_]='\0';
+    //std::cout<<sql_<<std::endl;
     YY_BUFFER_STATE bp= yy_scan_string(sql_);
     if (bp == nullptr)
     {
       LOG(ERROR) << "Failed to create yy buffer state." << std::endl;
       exit(1);
     }
+    //std::cout<<"QAQ"<<std::endl;
     yy_switch_to_buffer(bp);
+    //std::cout<<"QWQ"<<std::endl;
     MinisqlParserInit();
+    //std::cout<<"jst"<<std::endl;
     yyparse();
+    //std::cout<<"zsq"<<std::endl;
     if (MinisqlParserGetError())
       std::cout<<MinisqlParserGetErrorMessage();
+    //std::cout<<"YZM"<<std::endl;
     auto result = this->Execute(MinisqlGetParserRootNode());
     MinisqlParserFinish();
     yy_delete_buffer(bp);
@@ -653,6 +665,8 @@ dberr_t ExecuteEngine::ExecuteExecfile(pSyntaxNode ast, ExecuteContext *context)
       break;
     }
   }
+  finish=clock();
+  std::cout<<(double)(finish-start_)/CLOCKS_PER_SEC<<std::endl;
 }
 
 /**
