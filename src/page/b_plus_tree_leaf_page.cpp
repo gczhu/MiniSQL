@@ -186,7 +186,7 @@ void LeafPage::CopyNFrom(void *src, int size) {
  */
 bool LeafPage::Lookup(const GenericKey *key, RowId &value, const KeyManager &KM) {
   int index = KeyIndex(key, KM);
-  if (index == this->GetSize() || KM.CompareKeys(key, this->KeyAt(index)) != 0) {    // 没找到
+  if (index == this->GetSize() || KM.CompareKeys(key, this->KeyAt(index)) != 0) {// 没找到
     return false;
   }
   // 找到

@@ -64,6 +64,7 @@ bool BPlusTree::GetValue(const GenericKey *key, std::vector<RowId> &result, Tran
   RowId value;    // value对应记录的行号
   bool isExist = node->Lookup(key, value, processor_);
   buffer_pool_manager_->UnpinPage(node->GetPageId(), false);    // 解除固定
+  //std::cout<<"QAQ"<<value.GetPageId()<<std::endl;
   if (!isExist) {   // 没找到
     return false;
   } else {    // 找到
@@ -92,6 +93,7 @@ bool BPlusTree::Insert(GenericKey *key, const RowId &value, Transaction *transac
   // 如果已有该键，则插入失败，flag为false
   // 如果没有该键，则插入成功，flag为true
   bool flag = InsertIntoLeaf(key, value, transaction);
+  //std::cout << value.GetPageId() << std::endl;
   return flag;
 }
 /*

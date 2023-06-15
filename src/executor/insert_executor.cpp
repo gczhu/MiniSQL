@@ -34,11 +34,13 @@ bool InsertExecutor::Next([[maybe_unused]] Row *row, RowId *rid) {
       }
     }
   }
+  table_->GetTableHeap()->InsertTuple(ins, nullptr);
+  insr=ins.GetRowId();
   for(int i=0;i<index_.size();i++){
     Row row_;
     ins.GetKeyFromRow(table_->GetSchema(),index_[i]->GetIndexKeySchema(),row_);
     index_[i]->GetIndex()->InsertEntry(row_,insr, nullptr);
   }
-  table_->GetTableHeap()->InsertTuple(ins, nullptr);
+
   return false;
 }

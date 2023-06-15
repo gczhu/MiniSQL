@@ -39,6 +39,7 @@ void IndexScanExecutor::Init() {
       Fields.push_back(predicate->GetChildAt(1)->Evaluate(nullptr));
       Row _row(Fields);
       it->GetIndex()->ScanKey(_row,temp_result, nullptr,dynamic_pointer_cast<ComparisonExpression>(predicate)->GetComparisonType());
+      //for(auto i:temp_result)std::cout<<i.GetPageId()<<std::endl;
       std::sort(temp_result.begin(), temp_result.end());
       if(result.empty()){
         result.assign(temp_result.begin(),temp_result.end());
@@ -56,21 +57,23 @@ void IndexScanExecutor::Init() {
 bool IndexScanExecutor::Next(Row *row, RowId *rid) {
   TableInfo* table_;
   exec_ctx_->GetCatalog()->GetTable(plan_->GetTableName(),table_);
-  for(auto i=result.begin();i!=result.end();i++){
+  for(int i=s;i<result.size();i++){
     if(plan_->need_filter_){
-      Row row_(*i);
+      Row row_(result[i]);
       table_->GetTableHeap()->GetTuple(&row_,nullptr);
       if(plan_->GetPredicate()->Evaluate(&row_).CompareEquals(Field(kTypeInt,kTrue)) == kTrue){
         *row = row_;
         *rid = row_.GetRowId();
+        s=i+1;
         return true;
       }
     }
     else{
-      Row row_(*i);
+      Row row_(result[i]);
       table_->GetTableHeap()->GetTuple(&row_,nullptr);
       *row = row_;
       *rid = row_.GetRowId();
+      s=i+1;
       return true;
     }
   }

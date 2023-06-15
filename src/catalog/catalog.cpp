@@ -158,7 +158,7 @@ dberr_t CatalogManager::CreateTable(const string &table_name, TableSchema *schem
 
   // Allocate a new table ID
   table_id_t table_id = catalog_meta_->GetNextTableId()+1;
-  std::cout<<table_id<<std::endl;
+  //std::cout<<table_id<<std::endl;
   table_names_.emplace(table_name, table_id);
   catalog_meta_->table_meta_pages_.emplace(table_id, new_page_id);
   TableHeap *table_heap = TableHeap::Create(buffer_pool_manager_, schema_, txn, log_manager_, lock_manager_);
@@ -174,7 +174,7 @@ dberr_t CatalogManager::CreateTable(const string &table_name, TableSchema *schem
   table_info = TableInfo::Create();
   table_info->Init(table_meta, table_heap);
   tables_.emplace(table_id, table_info);
-  for(auto i:tables_)std::cout<<i.second->GetTableName()<<std::endl;
+  //for(auto i:tables_)std::cout<<i.second->GetTableName()<<std::endl;
   return DB_SUCCESS;
 }
 

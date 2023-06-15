@@ -31,14 +31,14 @@ ExecuteEngine::ExecuteEngine() {
     mkdir("./databases", 0777);
     dir = opendir(path);
   }
-  struct dirent *stdir;
-  while((stdir = readdir(dir)) != nullptr) {
-    if( strcmp( stdir->d_name , "." ) == 0 ||
-        strcmp( stdir->d_name , "..") == 0 ||
-        stdir->d_name[0] == '.')
-      continue;
-    dbs_[stdir->d_name] = new DBStorageEngine(stdir->d_name, false);
-  }
+//  struct dirent *stdir;
+//  while((stdir = readdir(dir)) != nullptr) {
+//    if( strcmp( stdir->d_name , "." ) == 0 ||
+//        strcmp( stdir->d_name , "..") == 0 ||
+//        stdir->d_name[0] == '.')
+//      continue;
+//    dbs_[stdir->d_name] = new DBStorageEngine(stdir->d_name, false);
+//  }
 
   /** After you finish the code for the CatalogManager section,
    *  you can uncomment the commented code.
@@ -214,7 +214,7 @@ dberr_t ExecuteEngine::Execute(pSyntaxNode ast) {
   } else {
     writer.EndInformation(result_set.size(), duration_time, false);
   }
-  std::cout << writer.stream_.rdbuf();
+  //std::cout << writer.stream_.rdbuf();
   return DB_SUCCESS;
 }
 

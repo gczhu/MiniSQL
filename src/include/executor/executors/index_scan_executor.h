@@ -36,6 +36,7 @@ class IndexScanExecutor : public AbstractExecutor {
 
   std::vector<RowId> result;
 
+  int s=0;
 
  private:
 
