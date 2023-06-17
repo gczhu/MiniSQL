@@ -31,14 +31,14 @@ ExecuteEngine::ExecuteEngine() {
     mkdir("./databases", 0777);
     dir = opendir(path);
   }
-//  struct dirent *stdir;
-//  while((stdir = readdir(dir)) != nullptr) {
-//    if( strcmp( stdir->d_name , "." ) == 0 ||
-//        strcmp( stdir->d_name , "..") == 0 ||
-//        stdir->d_name[0] == '.')
-//      continue;
-//    dbs_[stdir->d_name] = new DBStorageEngine(stdir->d_name, false);
-//  }
+  struct dirent *stdir;
+  while((stdir = readdir(dir)) != nullptr) {
+    if( strcmp( stdir->d_name , "." ) == 0 ||
+        strcmp( stdir->d_name , "..") == 0 ||
+        stdir->d_name[0] == '.')
+      continue;
+    dbs_[stdir->d_name] = new DBStorageEngine(stdir->d_name, false);
+  }
 
   /** After you finish the code for the CatalogManager section,
    *  you can uncomment the commented code.
@@ -543,7 +543,6 @@ dberr_t ExecuteEngine::ExecuteCreateIndex(pSyntaxNode ast, ExecuteContext *conte
     vec_index_colum_lists.push_back(string(pSnode_->val_));
     pSnode_ = pSnode_->next_;
   }
-  //暂时没考虑index所列的列里没有primary和unique的情况，真出事了再回来改
   Schema* target_schema = table_->GetSchema();
   for(string tmp_colum_name: vec_index_colum_lists)
   {
